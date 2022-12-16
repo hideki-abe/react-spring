@@ -1,4 +1,4 @@
-package com.reactspring.model;
+package com.reactspring.model.enums;
 
 public enum StatusLancamento {
 

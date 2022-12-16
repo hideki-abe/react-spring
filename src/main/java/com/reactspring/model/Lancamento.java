@@ -1,6 +1,8 @@
 package com.reactspring.model;
 
 
+import com.reactspring.model.enums.StatusLancamento;
+import com.reactspring.model.enums.TipoLancamento;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
