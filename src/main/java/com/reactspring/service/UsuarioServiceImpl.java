@@ -29,7 +29,7 @@ public class UsuarioServiceImpl implements UsuarioService{
 
         }
 
-        if(usuario.get().getSenha().equals(senha)){
+        if(!usuario.get().getSenha().equals(senha)){
             throw new ErroAutenticacao("Senha invalida.");
         }
 
