@@ -11,6 +11,10 @@ import com.reactspring.service.UsuarioService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
+
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/lancamentos")
@@ -22,6 +26,29 @@ public class LancamentoResource {
 
     public LancamentoResource(LancamentoService service) {
         this.service = service;
+    }
+
+    @GetMapping
+    public ResponseEntity buscar(
+            @RequestParam(value = "descricao", required = false) String descricao,
+            @RequestParam(value = "mes", required = false) Integer mes,
+            @RequestParam(value = "ano", required = false) Integer ano,
+            @RequestParam(value = "usuario", required = false) Long idUsuario
+    ) {
+        Lancamento lancamentoFiltro = new Lancamento();
+        lancamentoFiltro.setDescricao(descricao);
+        lancamentoFiltro.setMes(mes);
+        lancamentoFiltro.setAno(ano);
+
+        Optional<Usuario> usuario = usuarioService.obterPorId(idUsuario);
+        if(usuario.isPresent()) {
+            return ResponseEntity.badRequest().body("Nao foi possivel realizar a consulta. Usuario nao encontrado para id informado.");
+        }else {
+            lancamentoFiltro.setUsuario(usuario.get());
+        }
+
+        List<Lancamento> lancamentos = service.buscar(lancamentoFiltro);
+        return ResponseEntity.ok(lancamentos);
     }
 
     @PostMapping
@@ -49,6 +76,15 @@ public class LancamentoResource {
         }).orElseGet( () ->
                 new ResponseEntity("Lancamento nao encontrado na base de dados.", HttpStatus.BAD_REQUEST));
         return ResponseEntity.badRequest().body("Lancamento nao encontrado na base de dados.");
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity deletar(@PathVariable("id") Long id) {
+        return service.obterPorId(id).map( entidade -> {
+            service.deletar(entidade);
+            return new ResponseEntity(HttpStatus.NO_CONTENT);
+        }).orElseGet( () ->
+                new ResponseEntity("Lancamento nao encontrado na base de dados.", HttpStatus.BAD_REQUEST));
     }
 
     private Lancamento converter(LancamentoDTO dto) {
