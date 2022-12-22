@@ -4,7 +4,10 @@ package com.reactspring.model;
 import com.reactspring.model.enums.StatusLancamento;
 import com.reactspring.model.enums.TipoLancamento;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 
 import java.math.BigDecimal;
@@ -12,6 +15,9 @@ import java.time.LocalDate;
 
 @Data
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table( name = "lancamento", schema = "financas")
 public class Lancamento {
 
