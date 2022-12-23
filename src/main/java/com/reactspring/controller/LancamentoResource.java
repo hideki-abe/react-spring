@@ -1,5 +1,6 @@
 package com.reactspring.controller;
 
+import com.reactspring.dto.AtualizaStatusDTO;
 import com.reactspring.dto.LancamentoDTO;
 import com.reactspring.exception.RegraNegocioException;
 import com.reactspring.model.Lancamento;
@@ -13,19 +14,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 
+import javax.swing.plaf.PanelUI;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/lancamentos")
 public class LancamentoResource {
-
     private LancamentoService service;
 
     private UsuarioService usuarioService;
 
-    public LancamentoResource(LancamentoService service) {
+    public LancamentoResource(LancamentoService service, UsuarioService usuarioService) {
         this.service = service;
+        this.usuarioService = usuarioService;
     }
 
     @GetMapping
@@ -41,7 +43,7 @@ public class LancamentoResource {
         lancamentoFiltro.setAno(ano);
 
         Optional<Usuario> usuario = usuarioService.obterPorId(idUsuario);
-        if(usuario.isPresent()) {
+        if(!usuario.isPresent()) {
             return ResponseEntity.badRequest().body("Nao foi possivel realizar a consulta. Usuario nao encontrado para id informado.");
         }else {
             lancamentoFiltro.setUsuario(usuario.get());
@@ -64,7 +66,7 @@ public class LancamentoResource {
 
     @PutMapping("{id}")
     public ResponseEntity atualizar(@PathVariable("id") Long id, @RequestBody LancamentoDTO dto) {
-        service.obterPorId(id).map( entity -> {
+        return service.obterPorId(id).map( entity -> {
             try {
                 Lancamento lancamento = converter(dto);
                 lancamento.setId(entity.getId());
@@ -75,7 +77,24 @@ public class LancamentoResource {
             }
         }).orElseGet( () ->
                 new ResponseEntity("Lancamento nao encontrado na base de dados.", HttpStatus.BAD_REQUEST));
-        return ResponseEntity.badRequest().body("Lancamento nao encontrado na base de dados.");
+    }
+
+    @PutMapping("{id}/atualiza-status")
+    public ResponseEntity atualizarStatus(@PathVariable("id") Long id, @RequestBody AtualizaStatusDTO dto) {
+        return service.obterPorId(id).map( entity -> {
+            StatusLancamento statusSelecionado = StatusLancamento.valueOf(dto.getStatus());
+            if(statusSelecionado == null) {
+                return ResponseEntity.badRequest().body("Nao foi possivel atualizar o status do lancamento, envie um status valido.");
+            }
+            try {
+                entity.setStatus(statusSelecionado);
+                service.atualizar(entity);
+                return ResponseEntity.ok(entity);
+            } catch(RegraNegocioException e) {
+                return ResponseEntity.badRequest().body(e.getMessage());
+            }
+        }).orElseGet( () ->
+                new ResponseEntity("Lancamento nao encontrado na base de dados.", HttpStatus.BAD_REQUEST));
     }
 
     @DeleteMapping("{id}")
@@ -99,8 +118,12 @@ public class LancamentoResource {
                 .orElseThrow( () -> new RegraNegocioException("Usuario nao encontrado para o id informado."));
 
         lancamento.setUsuario(usuario);
-        lancamento.setTipo(TipoLancamento.valueOf(dto.getTipo()));
-        lancamento.setStatus(StatusLancamento.valueOf(dto.getStatus()));
+        if(dto.getTipo() != null) {
+            lancamento.setTipo(TipoLancamento.valueOf(dto.getTipo()));
+        }
+        if(dto.getStatus() != null) {
+            lancamento.setStatus(StatusLancamento.valueOf(dto.getStatus()));
+        }
 
         return lancamento;
     }

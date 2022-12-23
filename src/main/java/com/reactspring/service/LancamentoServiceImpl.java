@@ -3,6 +3,7 @@ package com.reactspring.service;
 import com.reactspring.exception.RegraNegocioException;
 import com.reactspring.model.Lancamento;
 import com.reactspring.model.enums.StatusLancamento;
+import com.reactspring.model.enums.TipoLancamento;
 import com.reactspring.repository.LancamentoRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,6 +94,23 @@ public class LancamentoServiceImpl implements LancamentoService{
     @Override
     public Optional<Lancamento> obterPorId(Long id) {
         return repository.findById(Math.toIntExact(id));
+    }
+
+    @Override
+    @Transactional
+    public BigDecimal obterSaldoPorUsuario(Long id) {
+        BigDecimal receitas = repository.obterSaldoPorTipoLancamentoEUsuario(id, TipoLancamento.RECEITA);
+        BigDecimal despesas = repository.obterSaldoPorTipoLancamentoEUsuario(id,TipoLancamento.DESPESA);
+
+        if(receitas == null) {
+            receitas = BigDecimal.ZERO;
+        }
+
+        if(despesas == null) {
+            despesas = BigDecimal.ZERO;
+        }
+
+        return receitas.subtract(despesas);
     }
 
 }
