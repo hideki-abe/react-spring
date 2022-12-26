@@ -1,11 +1,15 @@
 package com.reactspring.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Data
 @Entity
 @Table( name = "usuario", schema = "financas")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Usuario {
 
     @Id
@@ -20,6 +24,7 @@ public class Usuario {
     private String email;
 
     @Column(name = "senha")
+    @JsonIgnore
     private String senha;
 
 
