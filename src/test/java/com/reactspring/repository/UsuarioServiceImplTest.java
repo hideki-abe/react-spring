@@ -1,4 +1,4 @@
-package com.reactspring.service;
+package com.reactspring.repository;
 
 import com.reactspring.model.Usuario;
 import com.reactspring.repository.UsuarioRepository;
@@ -9,15 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Optional;
 
-import static org.junit.Assert.*;
-
-
+//TESTE DE INTEGRACAO DO REPOSITORIO DE USUARIOS
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
 @DataJpaTest
