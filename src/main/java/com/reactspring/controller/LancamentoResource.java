@@ -35,12 +35,14 @@ public class LancamentoResource {
             @RequestParam(value = "descricao", required = false) String descricao,
             @RequestParam(value = "mes", required = false) Integer mes,
             @RequestParam(value = "ano", required = false) Integer ano,
-            @RequestParam(value = "usuario", required = false) Long idUsuario
+            @RequestParam(value = "usuario", required = false) Long idUsuario,
+            @RequestParam(value = "tipo", required = false) String tipo
     ) {
         Lancamento lancamentoFiltro = new Lancamento();
         lancamentoFiltro.setDescricao(descricao);
         lancamentoFiltro.setMes(mes);
         lancamentoFiltro.setAno(ano);
+        //lancamentoFiltro.setTipo(TipoLancamento.valueOf(tipo));
 
         Optional<Usuario> usuario = usuarioService.obterPorId(idUsuario);
         if(!usuario.isPresent()) {
@@ -51,6 +53,13 @@ public class LancamentoResource {
 
         List<Lancamento> lancamentos = service.buscar(lancamentoFiltro);
         return ResponseEntity.ok(lancamentos);
+    }
+
+    @GetMapping("{id}")
+    public ResponseEntity obterLancamento(@PathVariable("id") Long id) {
+        return service.obterPorId(id)
+                .map( lancamento -> new ResponseEntity(converter(lancamento), HttpStatus.OK))
+                .orElseGet( () -> new ResponseEntity(HttpStatus.NOT_FOUND));
     }
 
     @PostMapping
@@ -104,6 +113,19 @@ public class LancamentoResource {
             return new ResponseEntity(HttpStatus.NO_CONTENT);
         }).orElseGet( () ->
                 new ResponseEntity("Lancamento nao encontrado na base de dados.", HttpStatus.BAD_REQUEST));
+    }
+
+    private LancamentoDTO converter(Lancamento lancamento) {
+        return LancamentoDTO.builder()
+                .id(lancamento.getId())
+                .descricao(lancamento.getDescricao())
+                .valor(lancamento.getValor())
+                .mes(lancamento.getMes())
+                .ano(lancamento.getAno())
+                .status(lancamento.getStatus().name())
+                .tipo(lancamento.getTipo().name())
+                .usuario(lancamento.getUsuario().getId())
+                .build();
     }
 
     private Lancamento converter(LancamentoDTO dto) {
